@@ -5,7 +5,7 @@ Add or remove remote IP address ranges (es) to an existing receive connector on 
 ## Description
 
 This script adds or removes IP addresses or IP address ranges to/from existing Receive Connectors.
-The input file can contain more than one IP address (range), on entry per line.
+The input file can contain more than one IP address (range), one entry per line.
 The IP address parameter can be used to add a single IP address.
 The script creates a new sub directory beneath the current location of the script.
 The script utilizes the directory as a log directory to store the current remote IP address ranges prior modification.
@@ -17,7 +17,7 @@ This script is a replacement for [https://github.com/Apoc70/Add-ReceiveConnector
 
 - Registered GlobalModules PowerShell module, [http://scripts.granikos.eu](http://scripts.granikos.eu)
 - Windows Server 2016, Windows Server 2012 R2, Windows Server 2008 R2 SP1
-- Exhange ManagementShell 2013+
+- Exchange ManagementShell 2013+
 - Optionally, a txt file containing new remote IP address ranges, one per line
 
 Example:
@@ -60,7 +60,7 @@ Add all IP addresses stored in D:\Scripts\ip.txt to a receive connector named Re
 .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName MyConnector -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true
 ```
 
-Remove IP address 10.10.10.1 from a receive connector nameds MyConnector from all Exchange Servers in the forest 
+Remove IP address 10.10.10.1 from a receive connector nameds MyConnector from all Exchange Servers in the forest
 
 ## Note
 

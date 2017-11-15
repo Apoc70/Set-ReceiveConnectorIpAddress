@@ -16,7 +16,7 @@
 
   .DESCRIPTION 
   This script adds or removes IP addresses or IP address ranges to/from existing Receive Connectors.
-  The input file can contain more than one IP address (range), on entry per line.
+  The input file can contain more than one IP address (range), one entry per line.
   The IP address parameter can be used to add a single IP address.
   The script creates a new sub directory beneath the current location of the script.
   The script utilizes the directory as a log directory to store the current remote IP address ranges prior modification.
@@ -26,7 +26,7 @@
   Requirements 
   - Registered GlobalModules PowerShell module, http://scripts.granikos.eu  
   - Windows Server 2016, Windows Server 2012 R2, Windows Server 2008 R2 SP1  
-  - Exhange ManagementShell 2013+
+  - Exchange ManagementShell 2013+
   - Optionally, a txt file containing new remote IP address ranges, one per line
   Example:
   192.168.1.1
