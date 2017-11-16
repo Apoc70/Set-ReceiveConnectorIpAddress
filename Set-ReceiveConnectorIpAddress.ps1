@@ -1,6 +1,6 @@
 <# 
   .SYNOPSIS 
-  Add or remove remote IP address ranges (es) to an existing receive connector on all Exchange 2013+ Servers
+  Add or remove remote IP address ranges to an existing receive connector on all Exchange 2013+ Servers
 
   Thomas Stensitzki 
 
