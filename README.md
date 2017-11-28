@@ -48,6 +48,10 @@ Remove - remove remote IP address ranges
 
 View entire Active Directory forest (default FALSE)
 
+### Comment
+
+Additonal comment on why an IP address is added or removed
+
 ## Examples
 
 ``` PowerShell
@@ -61,6 +65,12 @@ Add all IP addresses stored in D:\Scripts\ip.txt to a receive connector named Re
 ```
 
 Remove IP address 10.10.10.1 from a receive connector nameds MyConnector from all Exchange Servers in the forest
+
+``` PowerShell
+.\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName MyConnector -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true -Comment 'Personal request of upper management'
+```
+
+Remove IP address 10.10.10.1 from a receive connector nameds MyConnector from all Exchange Servers in the forest with comment 'Personal request of upper management'
 
 ## Note
 
