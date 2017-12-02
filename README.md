@@ -81,7 +81,7 @@ RISK OF THE USE OR THE RESULTS FROM THE USE OF THIS CODE REMAINS WITH THE USER.
 
 Download and vote at TechNet Gallery
 
-* [TechNet Link] (https://gallery.technet.microsoft.com/Script-to-remove-unwanted-9d119c6b)
+* https://gallery.technet.microsoft.com/Add-or-Remove-Rremote-IP-e53e6f45](https://gallery.technet.microsoft.com/Add-or-Remove-Rremote-IP-e53e6f45)
 
 ## Credits
 
