@@ -1,6 +1,6 @@
 # Set-ReceiveConnectorIpAddress.ps1
 
-Add or remove remote IP address ranges (es) to an existing receive connector on all Exchange 2013+ Servers
+Add or remove remote IP address ranges to an existing receive connector on all Exchange 2013+ Servers
 
 ## Description
 
@@ -16,8 +16,8 @@ This script is a replacement for [https://github.com/Apoc70/Add-ReceiveConnector
 ## Requirements
 
 - Registered GlobalModules PowerShell module, [http://scripts.granikos.eu](http://scripts.granikos.eu)
-- Windows Server 2016, Windows Server 2012 R2, Windows Server 2008 R2 SP1
-- Exchange ManagementShell 2013+
+- Windows Server 2019, Windows Server 2016, Windows Server 2012 R2, Windows Server 2008 R2 SP1
+- Exchange ManagementShell 2013+, preferably 2016+
 - Optionally, a txt file containing new remote IP address ranges, one per line
 
 Example:

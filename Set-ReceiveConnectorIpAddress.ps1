@@ -8,7 +8,7 @@
     THIS CODE IS MADE AVAILABLE AS IS, WITHOUT WARRANTY OF ANY KIND. THE ENTIRE  
     RISK OF THE USE OR THE RESULTS FROM THE USE OF THIS CODE REMAINS WITH THE USER. 
 
-    Version 1.1, 2017-11-28
+    Version 1.2, 2019-02-18
 
     Please send ideas, comments and suggestions to support@granikos.eu 
 
@@ -39,6 +39,7 @@
     -------------------------------------------------------------------------------- 
     1.0 Initial community release 
     1.1 Comment parameter added (Issue #1)
+    1.2 Support for Exchange Server 2016/2019 added (Issue #2)
   
     .PARAMETER ConnectorName  
     Name of the receive connector the new IP addresses should be added to  
@@ -107,6 +108,10 @@ Import-Module -Name GlobalFunctions
 $ScriptDir = Split-Path -Path $script:MyInvocation.MyCommand.Path
 $ScriptName = $MyInvocation.MyCommand.Name
 $logger = New-Logger -ScriptRoot $ScriptDir -ScriptName $ScriptName -LogFileRetention 14
+
+# Purge logs depening on LogFileRetention
+$logger.Purge()
+
 $logger.Write('Script started')
 
 function Test-LogPath {
@@ -138,7 +143,7 @@ function Test-ReceiveConnector {
       $logger.Write( ('Error fetching connector {0} on server {1}' -f $ConnectorName, $Server) ) 
     }
 
-    if($targetRC -ne $null) {
+    if($null -ne $targetRC) {
 
       $logger.Write( ('Connector {0} found on server {1}' -f $ConnectorName, $Server) )
 
@@ -199,7 +204,7 @@ function Export-ConnectorIpRanges {
       # Check if new remote IP range already exists in configure remote IP range of connector
       $ipSearch = (Select-String -Pattern $newIpRange -Path $fileIpRanges )
 
-      if ($ipSearch -ne $null ){
+      if ($null -ne $ipSearch){
         # IP address exists
         switch ($Action) {
           'Add' {
@@ -263,8 +268,12 @@ else {
   $logger.Write('COMMENT: NONE')
 }
 
-# Fetch all Exchange 2013+ Servers
-$allExchangeServers = Get-ExchangeServer | Where-Object{($_.AdminDisplayVersion.Major -eq 15) -and ([string]$_.ServerRole).Contains('ClientAccess')} | Sort-Object
+# Fetch all Exchange 2013 Servers (15.0) or Exchange 2016+ Servers (15.1) but exclude EDGE
+$allExchangeServers = Get-ExchangeServer | Where-Object{ `
+  ((($_.AdminDisplayVersion.Major -eq 15) -and ($_.AdminDisplayVersion.Major -eq 0)) -and ([string]$_.ServerRole).Contains('ClientAccess') `
+  -or (($_.AdminDisplayVersion.Major -eq 15) -and ($_.AdminDisplayVersion.Major -gt 0))) `
+  -and ([string]$_.ServerRole -NotContains 'Edge') `
+  } | Sort-Object
 
 foreach($Server in $AllExchangeServers) {
   $logger.Write( ('Checking receive connector {0} on server {1}' -f $ConnectorName, $Server) )
