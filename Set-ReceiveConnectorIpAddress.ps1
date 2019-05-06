@@ -1,76 +1,77 @@
 <# 
-    .SYNOPSIS 
+  .SYNOPSIS 
   
-    Add or remove remote IP address ranges to an existing receive connector on all Exchange 2013+ Servers
+  Add or remove remote IP address ranges to an existing receive connector on all Exchange 2013+ Servers
 
-    Thomas Stensitzki 
+  Thomas Stensitzki 
 
-    THIS CODE IS MADE AVAILABLE AS IS, WITHOUT WARRANTY OF ANY KIND. THE ENTIRE  
-    RISK OF THE USE OR THE RESULTS FROM THE USE OF THIS CODE REMAINS WITH THE USER. 
+  THIS CODE IS MADE AVAILABLE AS IS, WITHOUT WARRANTY OF ANY KIND. THE ENTIRE  
+  RISK OF THE USE OR THE RESULTS FROM THE USE OF THIS CODE REMAINS WITH THE USER. 
 
-    Version 1.2, 2019-02-18
+  Version 1.3, 2019-04-29
 
-    Please send ideas, comments and suggestions to support@granikos.eu 
+  Please send ideas, comments and suggestions to support@granikos.eu 
 
-    .LINK 
-    http://scripts.granikos.eu
+  .LINK 
+  http://scripts.granikos.eu
 
-    .DESCRIPTION 
-    This script adds or removes IP addresses or IP address ranges to/from existing Receive Connectors.
-    The input file can contain more than one IP address (range), on entry per line.
-    The IP address parameter can be used to add a single IP address.
-    The script creates a new sub directory beneath the current location of the script.
-    The script utilizes the directory as a log directory o store the current remote IP address ranges prior modification.
-    A log is written to the \log subfolder utilitzing the GlobalFunctions Logger object.
+  .DESCRIPTION 
+  This script adds or removes IP addresses or IP address ranges to/from existing Receive Connectors.
+  The input file can contain more than one IP address (range), on entry per line.
+  The IP address parameter can be used to add a single IP address.
+  The script creates a new sub directory beneath the current location of the script.
+  The script utilizes the directory as a log directory o store the current remote IP address ranges prior modification.
+  A log is written to the \log subfolder utilitzing the GlobalFunctions Logger object.
  
-    .NOTES 
-    Requirements 
-    - Registered GlobalModules PowerShell module, http://scripts.granikos.eu  
-    - Windows Server 2016, Windows Server 2012 R2, Windows Server 2008 R2 SP1  
-    - Exchange ManagementShell 2013+
-    - Optionally, a txt file containing new remote IP address ranges, one per line
+  .NOTES 
+  Requirements 
+  - Registered GlobalModules PowerShell module, http://scripts.granikos.eu  
+  - Windows Server 2012 R2 or newer 
+  - Exchange 2013 ManagementShell or newer
+  - Optionally, a txt file containing new remote IP address ranges, one per line
 
-    Example:
-    192.168.1.1
-    192.168.2.10-192.168.2.20
-    192.168.3.0/24
+  Example:
+  192.168.1.1
+  192.168.2.10-192.168.2.20
+  192.168.3.0/24
     
-    Revision History 
-    -------------------------------------------------------------------------------- 
-    1.0 Initial community release 
-    1.1 Comment parameter added (Issue #1)
-    1.2 Support for Exchange Server 2016/2019 added (Issue #2)
+  Revision History 
+  -------------------------------------------------------------------------------- 
+  1.0 Initial community release 
+  1.1 Comment parameter added (Issue #1)
+  1.2 Support for Exchange Server 2016/2019 added (Issue #2)
+  1.3 Check for available modules added
   
-    .PARAMETER ConnectorName  
-    Name of the receive connector the new IP addresses should be added to  
+  .PARAMETER ConnectorName  
+  Name of the receive connector the new IP addresses should be added to  
 
-    .PARAMETER FileName
-    Name of the input file name containing IP addresses, file must be located in the same directory as the PowerShell script
+  .PARAMETER FileName
+  Name of the input file name containing IP addresses, file must be located in the same directory as the PowerShell script
 
-    .PARAMETER IpAddress
-    Single IP address for being added/removed to/from a receive connector
+  .PARAMETER IpAddress
+  Single IP address for being added/removed to/from a receive connector
 
-    .PARAMETER Action
-    Add - add remote IP address ranges
-    Remove - remove remote IP address ranges
+  .PARAMETER Action
+  Add - add remote IP address ranges
+  Remove - remove remote IP address ranges
 
-    .PARAMETER ViewEntireForest
-    View entire Active Directory forest (default FALSE)
+  .PARAMETER ViewEntireForest
+  View entire Active Directory forest (default FALSE)
 
-    .PARAMETER Comment
-    Additonal comment on why an IP address is added or removed
+  .PARAMETER Comment
+  Additonal comment on why an IP address is added or removed
     
-    .EXAMPLE 
-    .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName RelayConnector -FileName D:\Scripts\ip.txt -Action Add
+  .EXAMPLE 
+  .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName RelayConnector -FileName D:\Scripts\ip.txt -Action Add
 
-    .EXAMPLE 
-    .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName RelayConnector -FileName D:\Scripts\ip.txt -Action Add -Comment ITSM-4711
+  .EXAMPLE 
+  .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName RelayConnector -FileName D:\Scripts\ip.txt -Action Add -Comment ITSM-4711
 
-    .EXAMPLE 
-    .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName MyConnector -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true
+  .EXAMPLE 
+  .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName 'My Connector' -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true
 
-    .EXAMPLE 
-    .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName MyConnector -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true -Comment 'Personal request of upper management'
+  .EXAMPLE 
+  .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName 'My Connector' -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true -Comment 'Personal request of upper management'
 
 #> 
 [cmdletbinding(DefaultParameterSetName='IP')]
@@ -96,23 +97,27 @@ param(
   [bool] $ViewEntireForest = $false
 )
 
-# 
+# Some variables
 $tmpFileFolderName = 'ReceiveConnectorIpAddresses'
 $tmpFileLocation = ''
+$ScriptDir = Split-Path -Path $script:MyInvocation.MyCommand.Path
+$ScriptName = $MyInvocation.MyCommand.Name
 
 # Timestamp for use in filename, adjust formatting to your regional requirements
 $timeStamp = Get-Date -Format 'yyyy-MM-dd HHmmss'
 
-# Implementation of global functions module
-Import-Module -Name GlobalFunctions
-$ScriptDir = Split-Path -Path $script:MyInvocation.MyCommand.Path
-$ScriptName = $MyInvocation.MyCommand.Name
-$logger = New-Logger -ScriptRoot $ScriptDir -ScriptName $ScriptName -LogFileRetention 14
+function Import-RequiredModules {
 
-# Purge logs depening on LogFileRetention
-$logger.Purge()
-
-$logger.Write('Script started')
+  # Import central logging functions 
+  if($null -ne (Get-Module -Name GlobalFunctions -ListAvailable).Version) {
+    Import-Module -Name GlobalFunctions
+  }
+  else {
+    Write-Warning -Message 'Unable to load GlobalFunctions PowerShell module.'
+    Write-Warning -Message 'Please check http://bit.ly/GlobalFunctions for further instructions'
+    exit
+  }
+}
 
 function Test-LogPath {
   $script:tmpFileLocation = Join-Path -Path $PSScriptRoot -ChildPath $tmpFileFolderName
@@ -140,14 +145,14 @@ function Test-ReceiveConnector {
       $targetRC = Get-ReceiveConnector -Server $Server | Where-Object {$_.name -eq $ConnectorName} -ErrorAction SilentlyContinue
     }
     catch {
-      $logger.Write( ('Error fetching connector {0} on server {1}' -f $ConnectorName, $Server) ) 
+      $logger.Write( ('Error fetching connector [{0}] on server {1}' -f $ConnectorName, $Server) ) 
     }
 
     if($null -ne $targetRC) {
 
-      $logger.Write( ('Connector {0} found on server {1}' -f $ConnectorName, $Server) )
+      $logger.Write( ('Connector [{0}] found on server {1}' -f $ConnectorName, $Server) )
 
-      Write-Host ('Checking ReceiveConnector on Server: {0}' -f $Server)
+      Write-Host ('Checking ReceiveConnector on server {0}' -f $Server)
     
       # Save current RemoteIpRange before we change any IP address
       Export-ConnectorIpRanges -ReceiveConnector $targetRC
@@ -199,7 +204,7 @@ function Export-ConnectorIpRanges {
 
     foreach ($newIpRange in $newIpRangesFileContent ){
 
-      $logger.Write( ('Checking Remote IP range {0} in {1}' -f $newIpRange, $fileIpRanges) )
+      $logger.Write( ('Checking Remote IP range [{0}] in {1}' -f $newIpRange, $fileIpRanges) )
 
       # Check if new remote IP range already exists in configure remote IP range of connector
       $ipSearch = (Select-String -Pattern $newIpRange -Path $fileIpRanges )
@@ -208,10 +213,10 @@ function Export-ConnectorIpRanges {
         # IP address exists
         switch ($Action) {
           'Add' {
-            $logger.Write( ('{0} already exists in {1} and CANNOT be added' -f $newIpRange, $ConnectorName) )
+            $logger.Write( ('[{0}] already exists in [{1}] and CANNOT be added' -f $newIpRange, $ConnectorName) )
           }
           'Remove' {
-            $logger.Write( ('{0} exists in {1} and will be removed' -f $newIpRange, $ConnectorName) )
+            $logger.Write( ('[{0}] exists in [{1}] and will be removed' -f $newIpRange, $ConnectorName) )
             $ReceiveConnector.RemoteIPRanges -= $newIpRange
           }
           default {}
@@ -222,11 +227,11 @@ function Export-ConnectorIpRanges {
         # Remote IP range does not exist 
         switch ($Action) {
           'Add' {
-            $logger.Write( ('{0} does not exist in {1} and will be added' -f $newIpRange, $ConnectorName) )
+            $logger.Write( ('[{0}] does not exist in [{1}] and will be added' -f $newIpRange, $ConnectorName) )
             $ReceiveConnector.RemoteIPRanges += $newIpRange
           }
           'Remove' {
-            $logger.Write( ('{0} does NOT exist in {1} and CANNOT be removed' -f $newIpRange, $ConnectorName) )
+            $logger.Write( ('[{0}] does NOT exist in [{1}] and CANNOT be removed' -f $newIpRange, $ConnectorName) )
           }
           default {}
         }
@@ -243,6 +248,15 @@ function Export-ConnectorIpRanges {
 }
 
 # MAIN -------------------------------------------------------
+
+# Import required module(s) first
+Import-RequiredModules
+
+# Create new logger
+$logger = New-Logger -ScriptRoot $ScriptDir -ScriptName $ScriptName -LogFileRetention 14
+# Purge logs depening on LogFileRetention
+$logger.Purge()
+$logger.Write('Script started')
 
 if($ViewEntireForest) {
   $logger.Write( ('Setting ADServerSettings -ViewEntireForest {0}' -f $true) )
@@ -270,13 +284,14 @@ else {
 
 # Fetch all Exchange 2013 Servers (15.0) or Exchange 2016+ Servers (15.1) but exclude EDGE
 $allExchangeServers = Get-ExchangeServer | Where-Object{ `
-  ((($_.AdminDisplayVersion.Major -eq 15) -and ($_.AdminDisplayVersion.Major -eq 0)) -and ([string]$_.ServerRole).Contains('ClientAccess') `
+  ((($_.AdminDisplayVersion.Major -eq 15) -and ($_.AdminDisplayVersion.Major -eq 0)) `
+  -and ([string]$_.ServerRole).Contains('ClientAccess') `
   -or (($_.AdminDisplayVersion.Major -eq 15) -and ($_.AdminDisplayVersion.Major -gt 0))) `
   -and ([string]$_.ServerRole -NotContains 'Edge') `
   } | Sort-Object
 
 foreach($Server in $AllExchangeServers) {
-  $logger.Write( ('Checking receive connector {0} on server {1}' -f $ConnectorName, $Server) )
+  $logger.Write( ('Checking receive connector [{0}] on server {1}' -f $ConnectorName, $Server) )
 
   Test-ReceiveConnector -Server $Server
 }
