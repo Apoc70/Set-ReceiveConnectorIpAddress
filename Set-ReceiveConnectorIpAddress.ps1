@@ -74,7 +74,7 @@
   .\Set-ReceiveConnectorIpAddress.ps1 -ConnectorName 'My Connector' -IpAddress 10.10.10.1 -Action Remove -ViewEntireForest $true -Comment 'Personal request of upper management'
 
 #> 
-[cmdletbinding(DefaultParameterSetName='IP')]
+[CmdletBinding(DefaultParameterSetName='IP')]
 param(
   [parameter(Mandatory,HelpMessage='Receive Connector Name',ParameterSetName='IP')]
   [parameter(Mandatory,HelpMessage='Receive Connector Name',ParameterSetName='F')]
